@@ -66,6 +66,20 @@ None for drafts. Optional:
 
 The scripts read keys from the environment only and never print them.
 
+## What it runs, sends and fetches
+
+Everything runs on your machine. There is no telemetry and no account.
+
+| Skill | Runs locally | Network |
+|---|---|---|
+| motion-video | Python, Manim, ffmpeg | none |
+| motion-web-video | Python, Node, headless Chrome, ffmpeg; a preview and editor server on `127.0.0.1` only | the two templates load fonts from Google Fonts (`fonts.googleapis.com`); with `--paid`, the narration text goes to the ElevenLabs API |
+| training-guide | Python (reads Claude Code session logs on your machine to recover screenshots) | none |
+| training-video | Python through `uv` (Pillow 12.3.0 and imageio-ffmpeg 0.6.0 from PyPI on first run), ffmpeg | narration text to the ElevenLabs API, only without `--local`; your own S3 bucket, only when `TRAINING_VIDEO_BUCKET` is set |
+
+Data sent: only the narration lines you approve, to ElevenLabs, and only on a paid run. Keys are
+read from the environment and never written to a file or printed. No personal data is collected.
+
 ## Layout
 
 ```

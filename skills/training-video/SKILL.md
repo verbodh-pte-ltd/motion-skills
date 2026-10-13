@@ -9,7 +9,7 @@ The guide is the source. The video says what the guide says, step by step, over 
 screenshots. Fix wording in the guide, not in the video. Run everything from your repository root.
 
 ```bash
-R="uv run --with pillow --with imageio-ffmpeg python ${CLAUDE_SKILL_DIR}/scripts/guide_video.py"
+R="uv run --with pillow==12.3.0 --with imageio-ffmpeg==0.6.0 python ${CLAUDE_SKILL_DIR}/scripts/guide_video.py"
 G=docs/training/<App>/<NN-Topic>/<guide>.md
 ```
 
@@ -79,7 +79,7 @@ Only changed scenes cost characters on a re-run: the voice cache is keyed by the
 - Captions are burned in and change with the voice's own word timings. The `.vtt` has the same
   lines for players that show subtitles.
 - **Look at it before reporting.** Pull two frames and view them:
-  `ffmpeg -ss 3 -i <mp4> -frames:v 1 f1.png` (the ffmpeg path: `uv run --with imageio-ffmpeg python -c "import imageio_ffmpeg as f;print(f.get_ffmpeg_exe())"`).
+  `ffmpeg -ss 3 -i <mp4> -frames:v 1 f1.png` (the ffmpeg path: `uv run --with imageio-ffmpeg==0.6.0 python -c "import imageio_ffmpeg as f;print(f.get_ffmpeg_exe())"`).
   Then open the mp4 for the user to watch.
 - **Check the voice is in the file** (a video can look right and be silent):
   `ffmpeg -i <mp4> -t 20 -af volumedetect -f null - 2>&1 | grep -E "Audio:|mean_volume"`.

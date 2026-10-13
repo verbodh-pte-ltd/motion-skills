@@ -5,10 +5,10 @@ words as the voice reads them, and an ElevenLabs voice. Voice clips are made onc
 locally (and in S3 when TRAINING_VIDEO_BUCKET is set), keyed by voice + model + text, so a
 re-render never calls ElevenLabs again.
 
-    uv run --with pillow --with imageio-ffmpeg python guide_video.py script  <guide.md>
-    uv run --with pillow --with imageio-ffmpeg python guide_video.py voice   <guide.md> [--local]
-    uv run --with pillow --with imageio-ffmpeg python guide_video.py render  <guide.md> [--final]
-    uv run --with pillow --with imageio-ffmpeg python guide_video.py publish <guide.md>
+    uv run --with pillow==12.3.0 --with imageio-ffmpeg==0.6.0 python guide_video.py script  <guide.md>
+    uv run --with pillow==12.3.0 --with imageio-ffmpeg==0.6.0 python guide_video.py voice   <guide.md> [--local]
+    uv run --with pillow==12.3.0 --with imageio-ffmpeg==0.6.0 python guide_video.py render  <guide.md> [--final]
+    uv run --with pillow==12.3.0 --with imageio-ffmpeg==0.6.0 python guide_video.py publish <guide.md>
 
 script  writes <topic>/video/<guide>/script.json from the guide: read and edit it first.
 voice   makes one clip per scene (ElevenLabs, or --local for the free system voice).
