@@ -1,0 +1,25 @@
+{
+  "shape": "16:9",
+  "text": {
+    "title": "Acme Board",
+    "plan1": "Starter", "price1": "$8",
+    "plan2": "Pro", "price2": "$15",
+    "plan3": "Pro+", "price3": "$25",
+    "tagline": "Plan. Ship. Repeat."
+  },
+  "colors": { "--bg": "#0f1218", "--fg": "#e8ebf2", "--accent": "#7aa2ff", "--card": "#171b24" },
+  "score": {
+    "master": 0.8,
+    "events": [
+      { "type": "pad", "scene": "Wake", "at": 0, "pitches": ["C3", "G3", "E4"], "len": "scene", "gain": 0.1 },
+      { "type": "hit", "scene": "Wake", "at": 0.2, "sound": "whoosh", "gain": 0.4 },
+      { "type": "pad", "scene": "Plans", "at": 0, "pitches": ["A2", "E3", "C4"], "len": "scene", "gain": 0.1 },
+      { "type": "hit", "scene": "Plans", "at": 0.2, "sound": "pop", "gain": 0.4 },
+      { "type": "hit", "scene": "Plans", "at": 0.4, "sound": "pop", "gain": 0.4 },
+      { "type": "hit", "scene": "Plans", "at": 0.6, "sound": "pop", "gain": 0.4 },
+      { "type": "note", "scene": "Plans", "at": 1.8, "pitch": "E5", "len": 0.4, "wave": "triangle" },
+      { "type": "pad", "scene": "Close", "at": 0, "pitches": ["F3", "C4", "A4"], "len": "scene", "gain": 0.1 },
+      { "type": "hit", "scene": "Close", "at": 0.3, "sound": "tick", "gain": 0.4 }
+    ]
+  }
+}

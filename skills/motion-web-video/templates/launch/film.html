@@ -1,0 +1,152 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Launch film</title>
+<link rel="stylesheet" href="/runtime/film.css">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@600;700;800&family=Chivo+Mono:wght@400;600&display=swap">
+<style>
+  /* Launch template: real screen-recorded clips framed on the brand ground, kinetic text cards
+     between chapters, a rapid-fire run of 1-second clips, and one end card. All from film.json "cuts". */
+  :root { --bg: #faf9f5; --fg: #141414; --muted: #6b6a65; --accent: #E5532A; --frame: #ffffff; --line: #e7e4dc; }
+  #stage { font-family: "Chivo Mono", ui-monospace, monospace; color: var(--fg); }
+  #stage > section { display: grid; place-items: center; }
+  .card { display: grid; gap: 18px; justify-items: start; width: 1560px; }
+  .card .l { font: 800 120px/1.02 "Inter Tight", system-ui, sans-serif; letter-spacing: -4px; margin: 0; }
+  .card .l.hl { color: var(--accent); }
+  .frame { position: relative; background: var(--frame); border: 2px solid var(--line); border-radius: 22px; overflow: hidden;
+    box-shadow: 0 50px 90px -40px rgb(40 30 10 / .35); }
+  .frame img { display: block; width: 100%; height: 100%; object-fit: cover; transform-origin: 50% 50%; }
+  .tag { position: absolute; left: 120px; bottom: 70px; font: 700 54px "Inter Tight", system-ui, sans-serif; letter-spacing: -1px;
+    background: var(--fg); color: var(--bg); padding: 10px 26px; border-radius: 14px; }
+  .tag.hl { background: var(--accent); color: #fff; }
+  .end { display: grid; gap: 44px; justify-items: center; text-align: center; }
+  .loop { display: flex; gap: 40px; font: 800 104px/1 "Inter Tight", system-ui, sans-serif; letter-spacing: -3px; }
+  .loop span:nth-child(2) { color: var(--accent); }
+  .brand { display: flex; align-items: center; gap: 28px; font: 700 80px "Inter Tight", system-ui, sans-serif; }
+  .brand img { width: 112px; height: 112px; }
+  .cta { font: 700 40px "Inter Tight", sans-serif; background: var(--accent); color: #fff; padding: 18px 40px; border-radius: 999px; }
+  .url { font-size: 38px; color: var(--muted); }
+</style>
+</head>
+<body>
+<div id="viewport"><div id="stage"></div></div>
+<script src="/runtime/motion.js"></script>
+<script type="module">
+import { film } from "/runtime/player.js";
+
+// film.json "cuts", in order. Each becomes one scene.
+//   {"scene": "S01", "kind": "card", "dur": 2.5, "lines": ["Your agents write code.", "*Your board never hears."]}   ("*" = accent)
+//   {"scene": "S02", "kind": "clip", "dur": 3, "clip": "hook-session-pr", "from": 0, "tag": "*17 s from task to PR", "zoom": 1.08}
+//   {"scene": "S03", "kind": "still", "dur": 2.5, "src": "shots/x.png", "w": 375, "h": 275, "tag": "Fix with an agent"}
+//   {"scene": "S04", "kind": "rapid", "dur": 4.8, "items": [{"clip": "rf-confidence", "tag": "Sprint confidence"}, ...]}
+//   {"scene": "S05", "kind": "end", "dur": 4, "loop": ["Plan it.", "Build it.", "Secure it."], "brand": "Acme Board",
+//    "logo": "brand/logo.png", "cta": "Get started", "url": "board.example.com"}
+// Clips come from clips/clips.json ({name: {src, w, h, dur}}), cut by the campaign's cut script.
+const data = await (await fetch("film.json", { cache: "no-store" })).json();
+const clips = await (await fetch("clips/clips.json", { cache: "no-store" })).json();
+const stage = document.getElementById("stage");
+const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]);
+const hl = s => s.startsWith("*") ? [s.slice(1), " hl"] : [s, ""];
+const MAX_W = 1700, MAX_H = 900;
+const fit = (w, h) => { const k = Math.min(MAX_W / w, MAX_H / h); return [Math.round(w * k), Math.round(h * k)]; };
+const videos = [];   // {el, start, from, dur} in film seconds, filled once scene starts are known
+
+// Clips are folders of numbered JPEG frames (clips/<name>/00001.jpg, 30 fps), not <video>: headless Chrome
+// does not repaint a seeked video reliably, while an image swap is exact on every frame.
+function clipMedia(id, m) {
+  return `<img id="${id}" src="${esc(m.frames)}/00001.jpg" alt="">`;
+}
+
+function frameFor(id, media, w, h) {
+  const [fw, fh] = fit(w, h);
+  return `<div class="frame" id="${id}" style="width:${fw}px;height:${fh}px">${media}</div>`;
+}
+
+for (const [i, c] of data.cuts.entries()) {
+  const sec = document.createElement("section");
+  sec.dataset.scene = c.scene;
+  if (c.kind === "card") {
+    sec.innerHTML = `<div class="card">${c.lines.map((l, j) => { const [t, k] = hl(l); return `<p class="l${k}" id="c${i}-${j}">${esc(t)}</p>`; }).join("")}</div>`;
+  } else if (c.kind === "clip" || c.kind === "still") {
+    const m = c.kind === "clip" ? clips[c.clip] : { src: c.src, w: c.w, h: c.h };
+    const media = c.kind === "clip" ? clipMedia(`v${i}`, m) : `<img id="v${i}" src="${esc(m.src)}" alt="">`;
+    const [t, k] = hl(c.tag ?? "");
+    sec.innerHTML = frameFor(`f${i}`, media, m.w, m.h) + (c.tag ? `<div class="tag${k}" id="t${i}">${esc(t)}</div>` : "");
+  } else if (c.kind === "rapid") {
+    sec.innerHTML = c.items.map((it, j) => {
+      const m = clips[it.clip];
+      return `<div style="position:absolute;inset:0;display:grid;place-items:center" id="r${i}-${j}">
+        ${frameFor(`rf${i}-${j}`, clipMedia(`v${i}-${j}`, m), m.w, m.h)}
+        <div class="tag hl">${esc(it.tag)}</div></div>`;
+    }).join("");
+  } else if (c.kind === "end") {
+    sec.innerHTML = `<div class="end"><div class="loop">${c.loop.map((l, j) => `<span id="e${i}-${j}">${esc(l)}</span>`).join("")}</div>
+      <div class="brand" id="eb${i}"><img src="${esc(c.logo)}" alt="">${esc(c.brand)}</div>
+      <div class="cta" id="ec${i}">${esc(c.cta)}</div><div class="url" id="eu${i}">${esc(c.url)}</div></div>`;
+  }
+  stage.append(sec);
+}
+// (clips are image frames; nothing to preload here)
+await Promise.all([...document.images].map(im => im.decode().catch(() => {})));
+await Promise.all(['800 120px "Inter Tight"', '400 30px "Chivo Mono"'].map(f => document.fonts.load(f).catch(() => {})));
+
+const spring = (bounce = 0.2, visualDuration = 0.5) => ({ type: "spring", bounce, visualDuration });
+let sceneStart = 0;
+
+function play(c, i, dur) {
+  const start = sceneStart; sceneStart += dur;
+  if (c.kind === "card") {
+    return c.lines.map((_, j) => [`#c${i}-${j}`, { opacity: [0, 1], y: [60, 0] }, { ...spring(0.15, 0.5), at: 0.05 + j * 0.35 }]);
+  }
+  if (c.kind === "clip" || c.kind === "still") {
+    if (c.kind === "clip") videos.push({ el: document.getElementById(`v${i}`), frames: clips[c.clip].frames, fps: clips[c.clip].fps, start, from: c.from ?? 0, dur: clips[c.clip].dur });
+    const z = c.zoom ?? 1.06;
+    return [
+      [`#f${i}`, { opacity: [0, 1], scale: [0.96, 1] }, { ...spring(0.1, 0.35), at: 0 }],
+      [`#v${i}`, { scale: [1, z] }, { duration: dur, ease: "linear", at: 0 }],
+      ...(c.tag ? [[`#t${i}`, { opacity: [0, 1], x: [-30, 0] }, { ...spring(0.2, 0.4), at: Math.min(0.6, dur / 3) }]] : []),
+    ];
+  }
+  if (c.kind === "rapid") {
+    const slot = dur / c.items.length, segs = [];
+    c.items.forEach((it, j) => {
+      videos.push({ el: document.getElementById(`v${i}-${j}`), frames: clips[it.clip].frames, fps: clips[it.clip].fps, start: start + j * slot, from: it.from ?? 0, dur: clips[it.clip].dur });
+      segs.push([`#r${i}-${j}`, { opacity: [0, 1, 1, 0] }, { duration: slot, times: [0, 0.02, 0.98, 1], ease: "linear", at: j * slot }]);
+    });
+    return segs;
+  }
+  if (c.kind === "end") {
+    return [
+      ...c.loop.map((_, j) => [`#e${i}-${j}`, { opacity: [0, 1], y: [40, 0] }, { ...spring(0.25, 0.45), at: 0.1 + j * 0.3 }]),
+      [`#eb${i}`, { opacity: [0, 1], scale: [0.9, 1] }, { ...spring(0.3, 0.5), at: 1.1 }],
+      [`#ec${i}`, { opacity: [0, 1], y: [20, 0] }, { ...spring(0.3, 0.45), at: 1.4 }],
+      [`#eu${i}`, { opacity: [0, 1] }, { duration: 0.4, at: 1.6 }],
+    ];
+  }
+  return [];
+}
+
+// Clips follow the film clock: each frame shows the clip frame at (film time - its start + from).
+function frameUrl(v, t) {
+  const sec = Math.min(Math.max(t - v.start, 0) + v.from, v.from + v.dur - 1 / v.fps);
+  const n = Math.min(Math.floor(sec * v.fps) + 1, Math.round(v.dur * v.fps));
+  return `${v.frames}/${String(Math.max(n, 1)).padStart(5, "0")}.jpg`;
+}
+async function syncVideos(t, wait) {
+  const pending = [];
+  for (const v of videos) {
+    if (t < v.start - 0.001 || t > v.start + v.dur + 0.5) continue;
+    const url = frameUrl(v, t);
+    if (v.el.getAttribute("src") === url) continue;
+    v.el.setAttribute("src", url);
+    pending.push(v.el.decode().catch(() => {}));
+  }
+  if (wait) await Promise.all(pending);
+}
+document.addEventListener("film:time", e => syncVideos(e.detail, false));
+film({ scenes: data.cuts.map((c, i) => ({ name: c.scene, duration: c.dur, play: d => play(c, i, d) })),
+       beforeSeek: t => syncVideos(t, true) });
+</script>
+</body>
+</html>

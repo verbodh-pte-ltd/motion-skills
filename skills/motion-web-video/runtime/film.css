@@ -1,0 +1,34 @@
+/* Base styles for motion-web-video films. The stage is the film frame; everything else is
+   preview and editor chrome, hidden while rendering. Films set their own colours as
+   custom properties (--bg, --fg, --accent...) so the editor can change them. */
+:root { --chrome-bg: #14171f; --chrome-fg: #e6e9f0; --chrome-line: #2b3140; --chrome-accent: #7aa2ff; }
+html, body { margin: 0; height: 100%; }
+body { background: var(--chrome-bg); color: var(--chrome-fg); font: 14px/1.4 system-ui, sans-serif;
+  display: grid; grid-template-rows: 1fr auto; }
+body[data-mode="render"] { display: block; background: var(--bg, #000); overflow: hidden; }
+body[data-mode="edit"] { grid-template-columns: 1fr 280px; grid-template-rows: 1fr auto; }
+#viewport { position: relative; overflow: hidden; min-height: 0; min-width: 0; }
+body[data-mode="render"] #viewport { overflow: visible; }
+#stage { position: absolute; left: 0; top: 0; transform-origin: 0 0; overflow: hidden; background: var(--bg, #000); }
+#stage > section { position: absolute; inset: 0; }
+#stage > section[hidden] { display: none !important; } /* a film's own display: grid must not show a hidden scene */
+#film-controls { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; padding: 10px 16px;
+  border-top: 1px solid var(--chrome-line); }
+body[data-mode="edit"] #film-controls { grid-column: 1; }
+#film-controls button, #film-editor button { font: inherit; color: var(--chrome-fg); background: none;
+  border: 1px solid var(--chrome-line); border-radius: 6px; padding: 5px 10px; cursor: pointer; }
+#film-controls button:focus-visible, #film-editor :focus-visible { outline: 2px solid var(--chrome-accent); outline-offset: 2px; }
+#film-scrub { flex: 1; min-width: 160px; accent-color: var(--chrome-accent); }
+#film-clock { font-variant-numeric: tabular-nums; min-width: 4.5em; }
+#film-scenes { display: flex; flex-wrap: wrap; gap: 6px; }
+#film-editor { grid-column: 2; grid-row: 1 / span 2; overflow-y: auto; padding: 16px;
+  border-left: 1px solid var(--chrome-line); display: grid; gap: 10px; align-content: start; }
+#film-editor h2 { font-size: 12px; text-transform: uppercase; letter-spacing: .06em; margin: 8px 0 0; opacity: .7; }
+#film-editor label { display: grid; gap: 4px; }
+#film-editor input { font: inherit; padding: 6px; border-radius: 6px; border: 1px solid var(--chrome-line);
+  background: transparent; color: inherit; }
+#film-editor input[type="color"] { padding: 2px; height: 32px; }
+@media (max-width: 700px) {
+  body[data-mode="edit"] { grid-template-columns: 1fr; grid-template-rows: 50vh auto auto; }
+  #film-editor { grid-column: 1; grid-row: auto; border-left: 0; border-top: 1px solid var(--chrome-line); }
+}

@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Pricing cards film</title>
+<link rel="stylesheet" href="/runtime/film.css">
+<style>
+  /* Film colours are custom properties, so the editor can change them from film.json. */
+  :root { --bg: #0f1218; --fg: #e8ebf2; --muted: #9aa2b4; --accent: #7aa2ff; --card: #171b24; }
+  #stage { font-family: "Segoe UI", "Helvetica Neue", system-ui, sans-serif; color: var(--fg); }
+  .center { display: grid; place-content: center; text-align: center; gap: 24px; }
+  h1 { font-size: 140px; font-weight: 600; margin: 0; letter-spacing: -2px; }
+  .sub { font-size: 48px; color: var(--accent); margin: 0; }
+  .row { display: flex; gap: 48px; justify-content: center; align-items: center; height: 100%; }
+  .card { width: 420px; padding: 56px 40px; border-radius: 40px; background: var(--card);
+    border: 2px solid #2a303c; text-align: center; }
+  .card.pop { border-color: var(--accent); }
+  .card b { display: block; font-size: 44px; }
+  .card span { display: block; font-size: 88px; font-weight: 700; margin-top: 16px; }
+  .card small { font-size: 28px; color: var(--muted); }
+</style>
+</head>
+<body>
+<div id="viewport">
+  <div id="stage">
+    <section data-scene="Wake" class="center">
+      <h1 id="title" data-text="title">Acme Board</h1>
+    </section>
+    <section data-scene="Plans">
+      <div class="row">
+        <div class="card" id="c1"><b data-text="plan1">Starter</b><span data-text="price1">$8</span><small>/user/month</small></div>
+        <div class="card pop" id="c2"><b data-text="plan2">Pro</b><span data-text="price2">$15</span><small>/user/month</small></div>
+        <div class="card" id="c3"><b data-text="plan3">Pro+</b><span data-text="price3">$25</span><small>/user/month</small></div>
+      </div>
+    </section>
+    <section data-scene="Close" class="center">
+      <h1 data-text="title">Acme Board</h1>
+      <p class="sub" id="tagline" data-text="tagline">Plan. Ship. Repeat.</p>
+    </section>
+  </div>
+</div>
+<script src="/runtime/motion.js"></script>
+<script type="module">
+import { film } from "/runtime/player.js";
+
+const spring = (bounce = 0.25, visualDuration = 0.6) => ({ type: "spring", bounce, visualDuration });
+
+film({
+  scenes: [
+    { name: "Wake", duration: 2,
+      play: () => [["#title", { opacity: [0, 1], y: [40, 0] }, { ...spring(0.2), at: 0.2 }]] },
+    { name: "Plans", duration: 3.5,
+      play: () => [
+        ["#c1", { opacity: [0, 1], y: [80, 0] }, { ...spring(), at: 0.2 }],
+        ["#c2", { opacity: [0, 1], y: [80, 0] }, { ...spring(), at: 0.4 }],
+        ["#c3", { opacity: [0, 1], y: [80, 0] }, { ...spring(), at: 0.6 }],
+        ["#c2", { scale: [1, 1.08] }, { ...spring(0.45, 0.5), at: 1.8 }],
+      ] },
+    { name: "Close", duration: 2.5,
+      play: () => [["#tagline", { opacity: [0, 1], y: [24, 0] }, { ...spring(0.2), at: 0.3 }]] },
+  ],
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,134 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Walkthrough film</title>
+<link rel="stylesheet" href="/runtime/film.css">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@600;700&family=Chivo+Mono:wght@400;600&display=swap">
+<style>
+  /* Walkthrough template: every scene comes from film.json "walk". Colours come from "colors". */
+  :root { --bg: #faf9f5; --fg: #141414; --muted: #6b6a65; --accent: #E5532A; --frame: #ffffff; --line: #e7e4dc; }
+  #stage { font-family: "Chivo Mono", ui-monospace, monospace; color: var(--fg); }
+  #stage > section { padding: 96px 120px; box-sizing: border-box; }
+  .title { display: grid; align-content: center; gap: 28px; height: 100%; }
+  .title h1 { font: 700 112px/1.05 "Inter Tight", system-ui, sans-serif; letter-spacing: -3px; margin: 0; max-width: 1500px; }
+  .title h1 .hl { color: var(--accent); }
+  .title p { font-size: 40px; color: var(--muted); margin: 0; max-width: 1400px; }
+  .kicker { font-size: 28px; letter-spacing: 4px; text-transform: uppercase; color: var(--accent); }
+  .shots { position: relative; height: 100%; }
+  .shot { position: absolute; inset: 0; display: grid; grid-template-rows: auto 1fr; gap: 36px; }
+  .caption { font: 700 60px/1.1 "Inter Tight", system-ui, sans-serif; letter-spacing: -1.5px; margin: 0; }
+  .caption small { display: block; font: 400 30px "Chivo Mono", monospace; letter-spacing: 0; color: var(--muted); margin-top: 12px; }
+  .frame { position: relative; justify-self: center; align-self: start; background: var(--frame); border: 2px solid var(--line);
+    border-radius: 24px; overflow: hidden; box-shadow: 0 40px 80px -30px rgb(40 30 10 / .28); }
+  .frame img { display: block; width: 100%; height: 100%; object-fit: contain; transform-origin: 0 0; }
+  .ring { position: absolute; border: 6px solid var(--accent); border-radius: 18px; box-shadow: 0 0 0 9999px rgb(20 20 20 / .18); }
+  .close { display: grid; align-content: center; justify-items: start; gap: 40px; height: 100%; }
+  .loop { display: flex; gap: 40px; font: 700 96px/1 "Inter Tight", system-ui, sans-serif; letter-spacing: -2px; }
+  .loop span { color: #c9c5bb; }
+  .loop span.on { color: var(--accent); }
+  .brand { display: flex; align-items: center; gap: 28px; font: 700 72px "Inter Tight", system-ui, sans-serif; }
+  .logo { width: 104px; height: 104px; display: block; }
+  .url { font-size: 40px; color: var(--muted); }
+</style>
+</head>
+<body>
+<div id="viewport"><div id="stage"></div></div>
+<script src="/runtime/motion.js"></script>
+<script type="module">
+import { film } from "/runtime/player.js";
+
+// The walk is data in film.json, so a new walkthrough film needs no code:
+//   {"scene": "Hook", "duration": 4, "kind": "title", "kicker": "", "title": "Line one|Line two", "sub": ""}
+//   {"scene": "Show", "duration": 15, "kind": "shots", "shots": [
+//      {"src": "shots/x.png", "caption": "", "note": "", "w": 1240, "h": 600,
+//       "focus": {"x": 0.1, "y": 0.2, "w": 0.4, "h": 0.3, "zoom": 1.5}}]}
+//   {"scene": "Close", "duration": 5, "kind": "close", "loop": ["Plan it.", "Build it.", "Secure it."], "on": 0,
+//    "brand": "Acme Board", "logo": "brand/logo.png", "url": "board.example.com"}
+// "logo" is the product's real logo file, copied from its live site. Never draw a stand-in.
+// "title" uses "|" for a line break; the last line is drawn in the accent colour.
+// focus x, y, w, h are fractions of the shot; zoom 1 means no zoom (keep it at 2 or less).
+const data = await (await fetch("film.json", { cache: "no-store" })).json();
+const stage = document.getElementById("stage");
+const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]);
+const FRAME_W = 1560, FRAME_H = 760;
+
+for (const [i, w] of data.walk.entries()) {
+  const sec = document.createElement("section");
+  sec.dataset.scene = w.scene;
+  if (w.kind === "title") {
+    const lines = esc(w.title).split("|");
+    sec.className = "title";
+    sec.innerHTML = `${w.kicker ? `<div class="kicker" id="k${i}">${esc(w.kicker)}</div>` : ""}
+      <h1 id="t${i}">${lines.map((l, j) => j === lines.length - 1 && lines.length > 1 ? `<span class="hl">${l}</span>` : l).join("<br>")}</h1>
+      ${w.sub ? `<p id="s${i}">${esc(w.sub)}</p>` : ""}`;
+  } else if (w.kind === "shots") {
+    sec.innerHTML = `<div class="shots">${w.shots.map((s, j) => {
+      const scale = Math.min(FRAME_W / s.w, FRAME_H / s.h);
+      const fw = Math.round(s.w * scale), fh = Math.round(s.h * scale);
+      const f = s.focus;
+      return `<div class="shot" id="sh${i}-${j}">
+        <h2 class="caption">${esc(s.caption)}${s.note ? `<small>${esc(s.note)}</small>` : ""}</h2>
+        <div class="frame" style="width:${fw}px;height:${fh}px">
+          <img id="im${i}-${j}" src="${esc(s.src)}" alt="">
+          ${f ? `<div class="ring" id="r${i}-${j}" style="left:${f.x * fw}px;top:${f.y * fh}px;width:${f.w * fw}px;height:${f.h * fh}px"></div>` : ""}
+        </div></div>`;
+    }).join("")}</div>`;
+  } else if (w.kind === "close") {
+    sec.className = "close";
+    sec.innerHTML = `<div class="loop">${w.loop.map((l, j) => `<span id="l${i}-${j}" class="${j === w.on ? "on" : ""}">${esc(l)}</span>`).join("")}</div>
+      <div class="brand" id="b${i}">${w.logo ? `<img class="logo" src="${esc(w.logo)}" alt="">` : ""}${esc(w.brand)}</div>
+      <div class="url" id="u${i}">${esc(w.url)}</div>`;
+  }
+  stage.append(sec);
+}
+await Promise.all([...document.images].map(im => im.decode().catch(() => {})));
+// Web fonts load late; wait for each face, or early frames render in a fallback font.
+await Promise.all(['700 60px "Inter Tight"', '400 30px "Chivo Mono"'].map(f => document.fonts.load(f).catch(() => {})));
+
+const spring = (bounce = 0.2, visualDuration = 0.6) => ({ type: "spring", bounce, visualDuration });
+const ease = d => ({ duration: d, ease: [0.4, 0, 0.2, 1] });
+
+function playWalk(w, i, dur) {
+  if (w.kind === "title") {
+    return [
+      ...(w.kicker ? [[`#k${i}`, { opacity: [0, 1], y: [20, 0] }, { ...spring(), at: 0.1 }]] : []),
+      [`#t${i}`, { opacity: [0, 1], y: [50, 0] }, { ...spring(0.15, 0.7), at: 0.25 }],
+      ...(w.sub ? [[`#s${i}`, { opacity: [0, 1], y: [24, 0] }, { ...spring(), at: 0.9 }]] : []),
+    ];
+  }
+  if (w.kind === "shots") {
+    const n = w.shots.length, slot = dur / n, segs = [];
+    w.shots.forEach((s, j) => {
+      const t0 = j * slot, last = j === n - 1;
+      segs.push([`#sh${i}-${j}`, { opacity: [0, 1], y: [60, 0] }, { ...spring(0.15, 0.6), at: t0 }]);
+      if (s.focus) {
+        const f = s.focus, z = f.zoom ?? 1;
+        const scale = Math.min(FRAME_W / s.w, FRAME_H / s.h), fw = s.w * scale, fh = s.h * scale;
+        // Zoom so the focus box sits in the middle of the frame, clamped inside the picture.
+        const cx = (f.x + f.w / 2) * fw, cy = (f.y + f.h / 2) * fh;
+        const tx = Math.min(0, Math.max(fw - fw * z, fw / 2 - cx * z));
+        const ty = Math.min(0, Math.max(fh - fh * z, fh / 2 - cy * z));
+        segs.push([`#im${i}-${j}`, { transform: ["translate(0px,0px) scale(1)", `translate(${tx}px,${ty}px) scale(${z})`] }, { ...ease(1.4), at: t0 + 0.9 }]);
+        segs.push([`#r${i}-${j}`, { opacity: [0, 1], scale: [1.15, 1], left: [`${f.x * fw}px`, `${cx * z + tx - f.w * fw * z / 2}px`],
+          top: [`${f.y * fh}px`, `${cy * z + ty - f.h * fh * z / 2}px`], width: [`${f.w * fw}px`, `${f.w * fw * z}px`],
+          height: [`${f.h * fh}px`, `${f.h * fh * z}px`] }, { ...ease(1.4), at: t0 + 0.9 }]);
+      }
+      if (!last) segs.push([`#sh${i}-${j}`, { opacity: [1, 0] }, { duration: 0.35, at: t0 + slot - 0.35 }]);
+    });
+    return segs;
+  }
+  if (w.kind === "close") {
+    return [
+      ...w.loop.map((_, j) => [`#l${i}-${j}`, { opacity: [0, 1], y: [40, 0] }, { ...spring(0.25, 0.5), at: 0.15 + j * 0.45 }]),
+      [`#b${i}`, { opacity: [0, 1], scale: [0.9, 1] }, { ...spring(0.3, 0.6), at: 0.4 + w.loop.length * 0.45 }],
+      [`#u${i}`, { opacity: [0, 1] }, { duration: 0.5, at: 0.8 + w.loop.length * 0.45 }],
+    ];
+  }
+  return [];
+}
+
+film({ scenes: data.walk.map((w, i) => ({ name: w.scene, duration: w.duration, play: dur => playWalk(w, i, dur) })) });
+</script>
+</body>
+</html>
