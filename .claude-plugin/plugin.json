@@ -15,5 +15,9 @@
     "explainer",
     "training",
     "documentation"
-  ]
+  ],
+  "supportUrl": "https://github.com/verbodh-pte-ltd/motion-skills/issues",
+  "documentationUrl": "https://github.com/verbodh-pte-ltd/motion-skills/blob/main/docs/QUICKSTART.md",
+  "privacyPolicyUrl": "https://github.com/verbodh-pte-ltd/motion-skills#what-it-runs-sends-and-fetches",
+  "termsOfServiceUrl": "https://github.com/verbodh-pte-ltd/motion-skills/blob/main/LICENSE"
 }
