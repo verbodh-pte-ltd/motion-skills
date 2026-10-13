@@ -123,8 +123,12 @@ def eleven(key, voice, text):
 
 
 def local_voice(text, out):
-    """Free voice: Windows System.Speech, or macOS say. No timings, so captions are spread by length."""
-    if platform.system() == "Windows":
+    """Free voice: Windows System.Speech, macOS say, or espeak-ng on Linux. No timings, so captions
+    are spread by length."""
+    if platform.system() == "Linux":
+        wav = out.with_suffix(".wav")
+        subprocess.run(["espeak-ng", "-w", str(wav), text], check=True)
+    elif platform.system() == "Windows":
         wav = out.with_suffix(".wav")
         ps = ("Add-Type -AssemblyName System.Speech; $s=New-Object System.Speech.Synthesis.SpeechSynthesizer; "
               f"$s.SetOutputToWaveFile('{wav}'); $s.Speak([Console]::In.ReadToEnd()); $s.Dispose()")

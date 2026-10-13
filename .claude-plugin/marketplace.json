@@ -1,0 +1,13 @@
+{
+  "name": "motion-skills",
+  "owner": { "name": "motion-skills authors" },
+  "description": "Video-as-code and training skills for Claude Code",
+  "plugins": [
+    {
+      "name": "motion-skills",
+      "source": "./",
+      "description": "Four skills: motion-video, motion-web-video, training-guide, training-video",
+      "version": "1.0.0"
+    }
+  ]
+}

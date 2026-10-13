@@ -1,0 +1,19 @@
+{
+  "name": "motion-skills",
+  "version": "1.0.0",
+  "description": "Animated explainer films (Manim or Motion web pages), training guides from browser walkthroughs, and narrated training videos. Drafts are free; an ElevenLabs voice is optional.",
+  "author": {
+    "name": "motion-skills authors"
+  },
+  "license": "MIT",
+  "homepage": "https://github.com/verbodh-pte-ltd/motion-skills",
+  "repository": "https://github.com/verbodh-pte-ltd/motion-skills",
+  "keywords": [
+    "video",
+    "motion",
+    "manim",
+    "explainer",
+    "training",
+    "documentation"
+  ]
+}

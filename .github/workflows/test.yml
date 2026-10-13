@@ -1,0 +1,38 @@
+name: tests
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Install ffmpeg and the free voice
+        run: sudo apt-get update && sudo apt-get install -y ffmpeg espeak-ng
+      - name: Check the machine
+        run: python scripts/check.py motion-web-video training-guide
+      - name: motion-video score
+        run: python skills/motion-video/scripts/test_motion.py
+      - name: motion-web-video render
+        run: python skills/motion-web-video/scripts/test_render.py
+      - name: motion-web-video voice (free voice only)
+        run: python skills/motion-web-video/scripts/test_voice.py
+      - name: install.py copies the skills
+        run: |
+          python scripts/install.py --project "$RUNNER_TEMP/demo"
+          test -f "$RUNNER_TEMP/demo/.claude/skills/motion-web-video/SKILL.md"
+          python scripts/install.py --codex --project "$RUNNER_TEMP/demo" --skill training-guide
+          test -f "$RUNNER_TEMP/demo/.agents/skills/training-guide/SKILL.md"

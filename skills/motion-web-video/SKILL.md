@@ -10,7 +10,7 @@ you can preview, edit and download as MP4. The film is code. Every frame comes f
 Motion timeline, so a re-render gives the same film, frame for frame. No footage. Narration is optional and comes last.
 
 ```bash
-R="<this skill>/scripts/render.mjs"
+R="${CLAUDE_SKILL_DIR}/scripts/render.mjs"
 ```
 
 Tools: Node 22 or later, Google Chrome, `ffmpeg`, Python 3. No npm packages. Motion 12.23.24
@@ -108,7 +108,7 @@ A film with no `score.events` renders silent.
 ## 5. Narration: script first, paid voice last
 - Write the words first, in `film.json`: `"narration": {"Wake": "Meet Acme Board.", ...}`. One short
   spoken line per scene, in plain short sentences. A scene with no line has no voice.
-- Draft voice, free: `python <this skill>/scripts/voice.py <dir>`. It uses the
+- Draft voice, free: `python ${CLAUDE_SKILL_DIR}/scripts/voice.py <dir>`. It uses the
   system voice and writes `voice.json`. Each scene stretches to fit its narration.
 - Final voice, paid, only after the user approves the draft:
   `voice.py <dir> --paid --plan` prints the characters ElevenLabs would bill and calls nothing.
@@ -157,7 +157,7 @@ node $R <dir> edit      # prints http://127.0.0.1:<port>/film.html?edit ; Ctrl+C
 - **`ffmpeg` not found on Windows after `winget install`:** open a new shell.
 
 ## Check the script
-`python <this skill>/scripts/test_render.py` renders the example and checks
+`python ${CLAUDE_SKILL_DIR}/scripts/test_render.py` renders the example and checks
 the length, the sound, that the picture moves, and that one time gives the same frame twice.
-`python <this skill>/scripts/test_voice.py` checks the free voice, clip reuse,
+`python ${CLAUDE_SKILL_DIR}/scripts/test_voice.py` checks the free voice, clip reuse,
 `--plan` and that scenes fit their narration. It never calls ElevenLabs.

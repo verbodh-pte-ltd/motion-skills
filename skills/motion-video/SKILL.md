@@ -13,7 +13,7 @@ For a walkthrough over screenshots, use the `training-video` skill. For web-styl
 an optional voice, use `motion-web-video`. This skill is for short films without a voice.
 
 ```bash
-M="<this skill>/scripts/motion.py"
+M="${CLAUDE_SKILL_DIR}/scripts/motion.py"
 ```
 
 Tools: Manim Community, `ffmpeg` and `ffprobe`. The score uses the Python standard library only.
@@ -93,5 +93,5 @@ and write them one at a time. After each scene, run a draft and look at one fram
   so that someone can render it again.
 
 ## Check the script
-`python3 <this skill>/scripts/test_motion.py` checks the pitch maths, the cue
+`python3 ${CLAUDE_SKILL_DIR}/scripts/test_motion.py` checks the pitch maths, the cue
 timing, the `"len": "scene"` length, the master level and that the sound effects come out the same each time.

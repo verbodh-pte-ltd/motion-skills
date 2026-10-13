@@ -20,13 +20,18 @@ Read that file before you start the task it covers.
 
 ## Use them with your agent
 
-- **Codex** reads `.agents/skills/`. Copy the skill folders there in your project.
-- **Claude Code** reads `.claude/skills/`. Copy the skill folders into `.claude/skills/` (per
-  project) or `~/.claude/skills/` (every project).
+- **Claude Code:** `/plugin install motion-skills --marketplace verbodh-pte-ltd/motion-skills`, or
+  `python scripts/install.py` to copy the folders into `~/.claude/skills/`.
+- **Codex:** `python scripts/install.py --codex --project <your project>` (copies into
+  `.agents/skills/`).
 - **Other agents:** give the agent the skill's `SKILL.md` as its instructions for the task.
 
-In every `SKILL.md`, `<this skill>` means that skill's folder, for example
-`.claude/skills/motion-video`.
+In every `SKILL.md`, `${CLAUDE_SKILL_DIR}` means that skill's folder. Claude Code fills it in;
+in other agents, read it as the folder that holds the `SKILL.md`.
+
+Before the first film, run `python scripts/check.py <skill>`. It names each missing tool and the
+command that installs it on this OS. Tell the user what is missing; do not install tools without
+asking.
 
 ## Tools to install
 
@@ -89,6 +94,9 @@ The voice test never calls ElevenLabs.
 motion-skills/
 ├── AGENTS.md                 this file
 ├── README.md                 overview and install
+├── docs/                     INSTALL, QUICKSTART, TROUBLESHOOTING
+├── scripts/                  check.py (tools per skill), install.py (copy the skills)
+├── .claude-plugin/           plugin and marketplace files
 ├── LICENSE                   MIT
 └── skills/
     ├── motion-video/         SKILL.md, scripts/motion.py, test

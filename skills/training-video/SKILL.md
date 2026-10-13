@@ -9,7 +9,7 @@ The guide is the source. The video says what the guide says, step by step, over 
 screenshots. Fix wording in the guide, not in the video. Run everything from your repository root.
 
 ```bash
-R="uv run --with pillow --with imageio-ffmpeg python <this skill>/scripts/guide_video.py"
+R="uv run --with pillow --with imageio-ffmpeg python ${CLAUDE_SKILL_DIR}/scripts/guide_video.py"
 G=docs/training/<App>/<NN-Topic>/<guide>.md
 ```
 
@@ -70,7 +70,7 @@ Only changed scenes cost characters on a re-run: the voice cache is keyed by the
   changed lines call ElevenLabs. The output says how many were made and how many came from cache.
 - Cost: ElevenLabs bills per character. Tell the user the count from step 2 before a first run.
   The free tier has 10,000 characters a month; a 4-minute guide is about 3,400.
-- `--local` uses the free system voice (Windows System.Speech, macOS `say`). Use it to check the
+- `--local` uses the free system voice (Windows System.Speech, macOS `say`, Linux `espeak-ng`). Use it to check the
   pipeline without spending characters. Captions are then spread by length, not by word timing.
 
 ## 5. Render
